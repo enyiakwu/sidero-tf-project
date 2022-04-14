@@ -8,7 +8,7 @@ terraform {
   backend "s3" {
     bucket = "sideroathlone"
     key = "terraform.tfstate"
-    region = "us-west-2"
+    region = var.aws_region
   }
 }
 
