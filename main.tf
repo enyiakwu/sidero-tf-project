@@ -1,16 +1,17 @@
+terraform {
+  backend "s3" {
+    bucket         = var.artifacts_bucket_name
+    key            = "terraform.tfstate"
+    region         = var.aws_region
+    encrypt        = true
+  }
+}
 
 data "aws_availability_zones" "available" {
   state = "available"
 }
 
-terraform {
-  required_version = "1.1.8"
-  backend "s3" {
-    bucket = "sideroathlone"
-    key = "terraform.tfstate"
-    region = var.aws_region
-  }
-}
+
 
 provider "aws" {
   region     = var.aws_region
@@ -44,7 +45,7 @@ resource "aws_route" "production_rt" {
 
 # Create a subnet to launch our instances into
 resource "aws_subnet" "public" {
-  count                   = var.availability_zone_count
+  count                   = var.availability_zones_count
   vpc_id                  = aws_vpc.production_vpc.id
   cidr_block              = cidrsubnet(var.vpc_cidr, var.subnet_cidr_bits, count.index)
   map_public_ip_on_launch = true
@@ -54,9 +55,9 @@ resource "aws_subnet" "public" {
 
 # Create a private subnet for our instances
 resource "aws_subnet" "private" {
-  count = var.availability_zone_count
+  count = var.availability_zones_count
   vpc_id                  = aws_vpc.production_vpc.id
-  cidr_block              = cidrsubnet(var.vpc_cidr, var.subnet_cidr_bits, count.index) + var.availability_zones_count
+  cidr_block              = cidrsubnet(var.vpc_cidr, var.subnet_cidr_bits, count.index + var.availability_zones_count)
   availability_zone       = data.aws_availability_zones.available.names[count.index]
 
 }
@@ -127,7 +128,7 @@ resource "aws_security_group" "production_vpc_sg" {
 resource "aws_elb" "web" {
   # name = "terraform-example-elb"
 
-  subnets         = [aws_subnet.public.id]
+  subnets         = [aws_subnet.public[0].id]
   security_groups = [aws_security_group.elb_sg.id]
   instances       = [aws_instance.production_server.id, aws_instance.developement_server.id]
 
@@ -180,7 +181,7 @@ resource "aws_instance" "production_server" {
   # We're going to launch into the same subnet as our ELB. In a production
   # environment it's more common to have a separate private subnet for
   # backend instances.
-  subnet_id = aws_subnet.production_subnet.id
+  subnet_id = aws_subnet.public[0].id
 
   user_data = <<-EOF
                 #!/bin/bash
@@ -222,7 +223,7 @@ resource "aws_instance" "developement_server" {
   # We're going to launch into the same subnet as our ELB. In a production
   # environment it's more common to have a separate private subnet for
   # backend instances.
-  subnet_id = aws_subnet.production_subnet.id
+  subnet_id = aws_subnet.public[0].id
 
   user_data = <<-EOF
                 #!/bin/bash
@@ -541,14 +542,21 @@ resource "aws_iam_role_policy" "apps_codepipeline_role_policy" {
 }
 EOF
 }
-resource "aws_s3_bucket" "cicd_bucket" {
-  bucket = var.artifacts_bucket_name
-  force_destroy = true
-  acl    = "private"
-  versioning {
-            enabled = true
-        }
 
+resource "aws_s3_bucket" "sid_bucket_artifacts" {
+  bucket = var.artifacts_bucket_name
+}
+
+resource "aws_s3_bucket_acl" "artifact_bucket_acl" {
+  bucket = aws_s3_bucket.sid_bucket_artifacts.id
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_versioning" "artifact_bucket_versioning" {
+  bucket = aws_s3_bucket.sid_bucket_artifacts.id
+  versioning_configuration {
+    status = "Enabled"
+  }
 }
 
 resource "aws_codepipeline" "infra_pipeline" {
@@ -559,7 +567,7 @@ resource "aws_codepipeline" "infra_pipeline" {
   }
 
   artifact_store {
-    location = aws_s3_bucket.cicd_bucket.id
+    location = aws_s3_bucket.sid_bucket_artifacts.id
     type     = "S3"
   }
 

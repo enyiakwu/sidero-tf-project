@@ -26,10 +26,6 @@ variable "artifacts_bucket_name" {
   default     = "sidero-athlone-artifacts"
 }
 
-variable "subnet_prefix" {
-  description = "cidr block for subnets"
-}
-
 variable "env" {
   description = "environment for terraform project."
   default     = "development"
@@ -55,21 +51,10 @@ variable "aws_amis" {
   default = {
     eu-west-1 = ""
     us-east-1 = ""
-    us-west-1 = ""
+    us-east-2 = ""
     us-west-2 = ""
   }
 }
-
-
-variable "aws_amis" {
-  default = {
-    eu-west-1 = ""
-    us-east-1 = ""
-    us-west-1 = ""
-    us-west-2 = ""
-  }
-}
-
 
 variable "aws_access_key" {
   description = "AWS access key"
