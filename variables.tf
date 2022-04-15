@@ -8,9 +8,10 @@
 # DESCRIPTION
 # }
 
-# variable "key_name" {
-#   description = "Desired name of AWS key pair"
-# }
+ variable "key_name" {
+   description = "Desired name of AWS key pair"
+   default = "oregon-kp"
+ }
 
 variable "aws_region" {
   description = "AWS region to launch servers."

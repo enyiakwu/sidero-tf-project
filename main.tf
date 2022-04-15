@@ -159,7 +159,7 @@ resource "aws_instance" "production_server" {
   ami = var.aws_amis[var.aws_region]
 
   # The name of our SSH keypair we created above.
-  key_name = "oregonregion"
+  key_name = var.key_name
 
   # Our Security group to allow HTTP and SSH access
   vpc_security_group_ids = [aws_security_group.production_vpc_sg.id]
