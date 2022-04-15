@@ -1,12 +1,12 @@
-terraform {
-  required_version = ">= 0.12"
-  backend "s3" {
-    bucket         = "sidero-backend-artifacts"
-    key            = "terraform.tfstate"
-    region         = "us-west-2"
-    encrypt        = true
-  }
-}
+# terraform {
+#   required_version = ">= 0.12"
+#   backend "s3" {
+#     bucket         = "sidero-backend-artifacts"
+#     key            = "terraform.tfstate"
+#     region         = "us-west-2"
+#     encrypt        = true
+#   }
+# }
 
 data "aws_availability_zones" "available" {
   state = "available"
