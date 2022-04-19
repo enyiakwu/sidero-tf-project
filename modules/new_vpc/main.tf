@@ -12,10 +12,6 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
-data "aws_vpc" "demo_vpc" {
-  id = var.vpc_id
-}
-
 provider "aws" {
   region     = var.aws_region
   access_key = var.aws_access_key
@@ -23,50 +19,43 @@ provider "aws" {
 }
 
 # Create a VPC to launch our instances into
-# resource "aws_vpc" "production_vpc" {
-#   cidr_block           = var.vpc_cidr
-#   enable_dns_hostnames = true
-#   enable_dns_support   = true
+resource "aws_vpc" "production_vpc" {
+  cidr_block           = var.vpc_cidr
+  enable_dns_hostnames = true
+  enable_dns_support   = true
 
-# }
+}
 
 # Create an internet gateway to give our subnet access to the outside world
 resource "aws_internet_gateway" "public" {
-  vpc_id = data.aws_vpc.demo_vpc.id
+  vpc_id = aws_vpc.production_vpc.id
   depends_on = [
-    data.aws_vpc.demo_vpc
+    aws_vpc.production_vpc
   ]
 
 }
 
 # Grant the VPC internet access on its main route table
 resource "aws_route" "production_rt" {
-  route_table_id         = data.aws_vpc.demo_vpc.main_route_table_id
+  route_table_id         = aws_vpc.production_vpc.main_route_table_id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.public.id
 }
 
 # Create a subnet to launch our instances into
-# resource "aws_subnet" "public" {
-#   count                   = var.availability_zones_count
-#   vpc_id                  = aws_vpc.production_vpc.id
-#   cidr_block              = cidrsubnet(var.vpc_cidr, var.subnet_cidr_bits, count.index)
-#   map_public_ip_on_launch = true
-#   availability_zone       = data.aws_availability_zones.available.names[count.index]
+resource "aws_subnet" "public" {
+  count                   = var.availability_zones_count
+  vpc_id                  = aws_vpc.production_vpc.id
+  cidr_block              = cidrsubnet(var.vpc_cidr, var.subnet_cidr_bits, count.index)
+  map_public_ip_on_launch = true
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
 
-# }
-
-resource "aws_subnet" "demo_vpc_sg" {
-  count             = var.availability_zones_count
-  vpc_id            = data.aws_vpc.demo_vpc.id
-  availability_zone = data.aws_availability_zones.available.names[count.index]
-  cidr_block        = cidrsubnet(var.vpc_cidr, var.subnet_cidr_bits, count.index)
 }
 
 # Create a private subnet for our instances
 resource "aws_subnet" "private" {
   count = var.availability_zones_count
-  vpc_id                  = data.aws_vpc.demo_vpc.id
+  vpc_id                  = aws_vpc.production_vpc.id
   cidr_block              = cidrsubnet(var.vpc_cidr, var.subnet_cidr_bits, count.index + var.availability_zones_count)
   availability_zone       = data.aws_availability_zones.available.names[count.index]
 
@@ -76,7 +65,7 @@ resource "aws_subnet" "private" {
 resource "aws_security_group" "elb_sg" {
   name        = "Production VPC LB"
   description = "Used to give the infrasture on this vpc traffic from the web"
-  vpc_id      = data.aws_vpc.demo_vpc.id
+  vpc_id      = aws_vpc.production_vpc.id
 
   # HTTP access from anywhere
   ingress {
@@ -100,7 +89,7 @@ resource "aws_security_group" "elb_sg" {
 resource "aws_security_group" "production_vpc_sg" {
   name        = "default_securitygroup"
   description = "used to access the instance via ssh and http protocol"
-  vpc_id      = data.aws_vpc.demo_vpc.id
+  vpc_id      = aws_vpc.production_vpc.id
 
   # SSH access from anywhere
   ingress {
@@ -115,7 +104,7 @@ resource "aws_security_group" "production_vpc_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["data.aws_vpc.demo_vpc.cidr_block"]
+    cidr_blocks = ["10.0.0.0/16"]
   }
 
   # HTTPS access from the VPC
@@ -123,7 +112,7 @@ resource "aws_security_group" "production_vpc_sg" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = [data.aws_vpc.demo_vpc.cidr_block]
+    cidr_blocks = ["10.0.0.0/16"]
   }
 
   # outbound internet access
@@ -138,7 +127,7 @@ resource "aws_security_group" "production_vpc_sg" {
 resource "aws_elb" "web" {
   # name = "terraform-example-elb"
 
-  subnets         = [aws_subnet.demo_vpc_sg[0].id]
+  subnets         = [aws_subnet.public[0].id]
   security_groups = [aws_security_group.elb_sg.id]
   instances       = [aws_instance.production_server.id]
 
