@@ -1,7 +1,7 @@
 aws_access_key           = ""
 aws_secret_key           = ""
 
-region                   = "us-west-2"
+region                   = "eu-west-1"
 availability_zones_count = 2
 
 project                  = "SID Test Pro"

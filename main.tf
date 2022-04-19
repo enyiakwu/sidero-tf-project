@@ -1,12 +1,12 @@
-# terraform {
-#   required_version = ">= 0.12"
-#   backend "s3" {
-#     bucket         = "sidero-backend-artifacts"
-#     key            = "terraform.tfstate"
-#     region         = "us-west-2"
-#     encrypt        = true
-#   }
-# }
+terraform {
+  required_version = ">= 0.12"
+  backend "s3" {
+    bucket         = "sidero"
+    key            = "terraform.tfstate"
+    region         = "eu-west-1"
+    encrypt        = true
+  }
+}
 
 data "aws_availability_zones" "available" {
   state = "available"
@@ -181,21 +181,21 @@ resource "aws_instance" "production_server" {
 
 }
 
-resource "aws_s3_bucket" "sid_bucket_artifacts" {
-  bucket = var.artifacts_bucket_name
-  force_destroy = true
+# resource "aws_s3_bucket" "sid_bucket_artifacts" {
+#   bucket = var.artifacts_bucket_name
+#   force_destroy = true
 
-}
+# }
 
-resource "aws_s3_bucket_acl" "artifact_bucket_acl" {
-  bucket = aws_s3_bucket.sid_bucket_artifacts.id
-  acl    = "private"
+# resource "aws_s3_bucket_acl" "artifact_bucket_acl" {
+#   bucket = aws_s3_bucket.sid_bucket_artifacts.id
+#   acl    = "private"
 
-}
+# }
 
-resource "aws_s3_bucket_versioning" "artifact_bucket_versioning" {
-  bucket = aws_s3_bucket.sid_bucket_artifacts.id
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
+# resource "aws_s3_bucket_versioning" "artifact_bucket_versioning" {
+#   bucket = aws_s3_bucket.sid_bucket_artifacts.id
+#   versioning_configuration {
+#     status = "Enabled"
+#   }
+# }

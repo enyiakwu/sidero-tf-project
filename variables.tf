@@ -15,12 +15,12 @@
 
 variable "aws_region" {
   description = "AWS region to launch servers."
-  default     = "us-west-2"
+  default     = "eu-west-1"
 }
 
 variable "aws_availability_zone" {
   description = "AWS Availability Zone to launch servers."
-  default     = "us-west-2a"
+  default     = "eu-west-1a"
 }
 variable "artifacts_bucket_name" {
   description = "AWS bucket for artifacts."
@@ -50,10 +50,10 @@ variable "infra_project_repository_name" {
 # Ubuntu Precise amis
 variable "aws_amis" {
   default = {
-    eu-west-1 = ""
-    us-east-1 = ""
-    us-east-2 = ""
-    us-west-2 = ""
+    eu-west-1 = "ami-062dd96647c9a75a3"
+    eu-west-1 = "ami-0f29c8402f8cce65c"
+    eu-west-1 = "ami-0e8cb4bdc5bb2e6c0"
+    eu-west-1 = "ami-0ec23856b3bad62d3"
   }
 }
 
@@ -67,10 +67,10 @@ variable "aws_secret_key" {
   type        = string
 }
 
-variable "region" {
-  description = "The aws region. https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html"
-  type        = string
-  default     = "us-west-2"
+# variable "region" {
+#   description = "The aws region. https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html"
+#   type        = string
+#   default     = "eu-west-1"
 }
 
 variable "availability_zones_count" {
@@ -101,7 +101,7 @@ variable "tags" {
   description = "A map of tags to add to all resources"
   type        = map(string)
   default = {
-    "Project"     = "TerraformEKSWorkshop"
+    "Project"     = "SID_Migration"
     "Environment" = "Development"
     "Owner"       = "sidero athlone"
   }
