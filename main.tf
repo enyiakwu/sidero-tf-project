@@ -1,7 +1,7 @@
 terraform {
   required_version = ">= 0.12"
   backend "s3" {
-    bucket         = "sidero"
+    bucket         = "sidero1"
     key            = "terraform.tfstate"
     region         = "eu-west-1"
     encrypt        = true
@@ -115,7 +115,7 @@ resource "aws_security_group" "production_vpc_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["data.aws_vpc.demo_vpc.cidr_block"]
+    cidr_blocks = [data.aws_vpc.demo_vpc.cidr_block]
   }
 
   # HTTPS access from the VPC
@@ -159,6 +159,7 @@ resource "aws_instance" "production_server" {
     # The default username for our AMI
     user = "ubuntu"
     host = self.public_ip
+    timeout = "4m"
     # The connection will use the local SSH agent for authentication.
   }
   availability_zone = var.aws_availability_zone
@@ -170,7 +171,7 @@ resource "aws_instance" "production_server" {
   ami = var.aws_amis[var.aws_region]
 
   # The name of our SSH keypair we created above.
-  key_name = var.key_name
+  key_name = aws_key_pair.deployer.key_name
 
   # Our Security group to allow HTTP and SSH access
   vpc_security_group_ids = [aws_security_group.production_vpc_sg.id]
@@ -178,7 +179,7 @@ resource "aws_instance" "production_server" {
   # We're going to launch into the same subnet as our ELB. In a production
   # environment it's more common to have a separate private subnet for
   # backend instances.
-  subnet_id = [aws_subnet.demo_vpc_sg[0].id]
+  subnet_id = aws_subnet.demo_vpc_sg[0].id
 
   user_data = <<-EOF
                 #!/bin/bash
@@ -190,6 +191,11 @@ resource "aws_instance" "production_server" {
                 sudo echo "Page is hosted in instance id $EC2_INSTANCE_ID" > /var/www/html/index.html
                 EOF
 
+}
+
+resource "aws_key_pair" "deployer" {
+  key_name   = var.key_name
+  public_key = var.public_key_path
 }
 
 # resource "aws_s3_bucket" "sid_bucket_artifacts" {

@@ -8,9 +8,14 @@
 # DESCRIPTION
 # }
 
+variable "ssh_public_key_path" {
+  type = string
+  description = "Path to the SSH public key to be used for authentication. Example: ~/.ssh/terraform.pub"
+}
+
  variable "key_name" {
    description = "Desired name of AWS key pair"
-   default = "oregon-kp"
+   default = "deployer-key"
  }
 
 variable "aws_region" {
@@ -88,7 +93,7 @@ variable "project" {
 variable "vpc_cidr" {
   description = "The CIDR block for the VPC. Default value is a valid CIDR, but not acceptable by AWS and should be overridden"
   type        = string
-  default     = "10.0.10.0/24"
+  default     = "172.31.0.0/16"
 }
 
 variable "subnet_cidr_bits" {
@@ -109,5 +114,5 @@ variable "tags" {
 
 variable "vpc_id" {
   description = "the reference to the aws vpc id we intend to use"
-  default = "vpc-0608e27fb277f68cf"
+  default = "vpc-0cb163f92a12bf5b9"
 }
