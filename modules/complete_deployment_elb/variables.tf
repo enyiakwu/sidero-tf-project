@@ -8,15 +8,15 @@
 # DESCRIPTION
 # }
 
-# variable "ssh_public_key_path" {
-#   type = string
-#   description = "Path to the SSH public key to be used for authentication. Example: ~/.ssh/terraform.pub"
-# }
+variable "ssh_public_key_path" {
+  type = string
+  description = "Path to the SSH public key to be used for authentication. Example: ~/.ssh/terraform.pub"
+}
 
-#  variable "key_name" {
-#    description = "Desired name of AWS key pair"
-#    default = "deployer-key"
-#  }
+ variable "key_name" {
+   description = "Desired name of AWS key pair"
+   default = "deployer-key"
+ }
 
 variable "aws_region" {
   description = "AWS region to launch servers."
