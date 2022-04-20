@@ -1,3 +1,1 @@
-# threatconnectpresentation
-
-three-tier architecture 
+Details
