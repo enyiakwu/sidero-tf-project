@@ -1,7 +1,7 @@
 aws_access_key           = ""
 aws_secret_key           = ""
 
-region                   = "eu-west-1"
+#region                   = "eu-west-1"
 
 availability_zones_count = 2
 
