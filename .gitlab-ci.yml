@@ -62,7 +62,7 @@ build:
     paths:
       - $PLAN
   only:
-    - master
+    - main
 
 apply:
   stage: apply
@@ -72,7 +72,7 @@ apply:
     - build
   when: manual
   only:
-    - master
+    - main
 
 destroy:
   stage: destroy
@@ -84,4 +84,4 @@ destroy:
   when: manual
   only:
     refs:
-      - master
+      - main
